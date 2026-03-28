@@ -104,8 +104,41 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         tags: ["Opportunities"],
         summary: "List all opportunities",
         description:
-          "Returns every opportunity document stored in MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Response items exclude Telegram ingest metadata (that remains stored server-side only).",
+          "Returns opportunity documents from MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Optional query params are combined with AND: `category` and `gender` are exact matches; `location` and `language` are case-insensitive substring matches. Response items exclude Telegram ingest metadata (stored server-side only).",
         operationId: "getOpportunityListings",
+        parameters: [
+          {
+            name: "category",
+            in: "query",
+            required: false,
+            schema: {
+              type: "string",
+              enum: ["casting", "workshop", "music", "voiceover", "other"],
+            },
+            description: "Exact category match",
+          },
+          {
+            name: "gender",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["male", "female", "unisex"] },
+            description: "Exact gender match",
+          },
+          {
+            name: "location",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Case-insensitive substring match on location",
+          },
+          {
+            name: "language",
+            in: "query",
+            required: false,
+            schema: { type: "string" },
+            description: "Case-insensitive substring match on language",
+          },
+        ],
         responses: {
           "200": {
             description: "List of opportunities",
@@ -113,6 +146,16 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/OpportunityListingResponse",
+                },
+              },
+            },
+          },
+          "400": {
+            description: "Invalid query parameter (for example unknown category or gender)",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErrorResponse",
                 },
               },
             },
@@ -206,7 +249,11 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
           rawText: { type: "string", description: "Original Telegram text or caption" },
           title: { type: "string" },
           description: { type: "string" },
-          category: { type: "string", enum: ["casting", "workshop", "other"] },
+          category: {
+            type: "string",
+            enum: ["casting", "workshop", "music", "voiceover", "other"],
+          },
+          gender: { type: "string", enum: ["male", "female", "unisex"] },
           roles: { type: "array", items: { type: "string" } },
           ageRange: { type: "string" },
           location: { type: "string" },

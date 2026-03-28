@@ -3,13 +3,33 @@
  * Telegram ingest metadata stays in MongoDB only).
  */
 
+export type OpportunityListingCategory =
+  | "casting"
+  | "workshop"
+  | "music"
+  | "voiceover"
+  | "other";
+
+export type OpportunityListingGender = "male" | "female" | "unisex";
+
+/** Optional filters from query string (all ANDed). */
+export interface OpportunityListingFilters {
+  category?: OpportunityListingCategory;
+  gender?: OpportunityListingGender;
+  /** Case-insensitive substring match on stored location. */
+  location?: string;
+  /** Case-insensitive substring match on stored language. */
+  language?: string;
+}
+
 export interface OpportunityListingItem {
   id: string;
   source: string;
   rawText: string;
   title: string;
   description: string;
-  category: "casting" | "workshop" | "other";
+  category: OpportunityListingCategory;
+  gender?: OpportunityListingGender;
   roles?: string[];
   ageRange?: string;
   location?: string;

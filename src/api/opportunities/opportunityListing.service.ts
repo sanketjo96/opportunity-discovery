@@ -1,10 +1,34 @@
 import { connectMongo } from "../../config/mongodb";
 import { OpportunityModel } from "../../models/opportunity.models";
 import type {
+  OpportunityListingFilters,
   OpportunityListingItem,
   OpportunityListingResponse,
 } from "../../types/api/opportunityListing.types";
 import { OpportunityListingItemDoc } from "../../types/mongo/opportunityDBItem";
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function buildMongoFilter(filters: OpportunityListingFilters): Record<string, unknown> {
+  const mongoFilter: Record<string, unknown> = {};
+
+  if (filters.category !== undefined) {
+    mongoFilter.category = filters.category;
+  }
+  if (filters.gender !== undefined) {
+    mongoFilter.gender = filters.gender;
+  }
+  if (filters.location !== undefined) {
+    mongoFilter.location = { $regex: escapeRegex(filters.location), $options: "i" };
+  }
+  if (filters.language !== undefined) {
+    mongoFilter.language = { $regex: escapeRegex(filters.language), $options: "i" };
+  }
+
+  return mongoFilter;
+}
 
 function mapDocToItem(doc: OpportunityListingItemDoc): OpportunityListingItem {
   const { _id, createdAt, updatedAt, ...rest } = doc;
@@ -17,11 +41,14 @@ function mapDocToItem(doc: OpportunityListingItemDoc): OpportunityListingItem {
 }
 
 /**
- * Returns all opportunity documents from MongoDB, newest first.
+ * Returns opportunity documents from MongoDB, newest first, optionally filtered by query params.
  */
-export async function listOpportunities(): Promise<OpportunityListingResponse> {
+export async function listOpportunities(
+  filters: OpportunityListingFilters = {}
+): Promise<OpportunityListingResponse> {
   await connectMongo();
-  const docs = await OpportunityModel.find()
+  const mongoFilter = buildMongoFilter(filters);
+  const docs = await OpportunityModel.find(mongoFilter as object)
     .select("-metadata -__v")
     .sort({ createdAt: -1 })
     .lean()
