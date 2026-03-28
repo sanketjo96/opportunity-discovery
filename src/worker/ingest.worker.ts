@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import express from "express";
 import { Worker, type Job } from "bullmq";
 
 import { connectMongo } from "../config/mongodb";
@@ -134,4 +135,16 @@ ingestWorker.on("failed", (job: Job | undefined, err: Error) => {
     name: job?.name,
     error: err.message,
   });
+});
+
+// This is to handle deployment of worker at free tier servers of render.com
+// Remove this code post MVP
+const app = express();
+const WORKER_PORT = Number(process.env.WORKER_PORT) || 3000;
+app.get("/health", (_req, res) => {
+  res.status(200).json({ status: "ok", service: "ingest-worker" });
+});
+
+app.listen(WORKER_PORT, () => {
+  console.log(`Server listening on http://localhost:${WORKER_PORT}`);
 });

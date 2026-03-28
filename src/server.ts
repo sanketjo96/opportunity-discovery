@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 
@@ -13,6 +14,7 @@ const PORT = Number(process.env.PORT) || 3000;
 function createApp(): express.Application {
   const app = express();
 
+  app.use(cors({ origin: "*" }));
   app.use(express.json());
 
   app.get("/health", (_req, res) => {
