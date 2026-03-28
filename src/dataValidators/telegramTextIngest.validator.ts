@@ -13,11 +13,14 @@ function parseTelegramUser(value: unknown): TelegramUser | null {
   if (!isRecord(value)) {
     return null;
   }
-  const { id, is_bot, first_name, last_name, language_code } = value;
+  const { id, is_bot, first_name, last_name, username, language_code } = value;
   if (typeof id !== "number" || typeof is_bot !== "boolean" || typeof first_name !== "string") {
     return null;
   }
   if (last_name !== undefined && typeof last_name !== "string") {
+    return null;
+  }
+  if (username !== undefined && typeof username !== "string") {
     return null;
   }
   if (language_code !== undefined && typeof language_code !== "string") {
@@ -28,6 +31,7 @@ function parseTelegramUser(value: unknown): TelegramUser | null {
     is_bot,
     first_name,
     ...(typeof last_name === "string" ? { last_name } : {}),
+    ...(typeof username === "string" ? { username } : {}),
     ...(typeof language_code === "string" ? { language_code } : {}),
   };
 }
@@ -36,7 +40,7 @@ function parseTelegramChat(value: unknown): TelegramChat | null {
   if (!isRecord(value)) {
     return null;
   }
-  const { id, first_name, last_name, type } = value;
+  const { id, first_name, last_name, username, type } = value;
   if (typeof id !== "number" || typeof type !== "string") {
     return null;
   }
@@ -46,11 +50,15 @@ function parseTelegramChat(value: unknown): TelegramChat | null {
   if (last_name !== undefined && typeof last_name !== "string") {
     return null;
   }
+  if (username !== undefined && typeof username !== "string") {
+    return null;
+  }
   return {
     id,
     type,
     ...(typeof first_name === "string" ? { first_name } : {}),
     ...(typeof last_name === "string" ? { last_name } : {}),
+    ...(typeof username === "string" ? { username } : {}),
   };
 }
 

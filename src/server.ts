@@ -30,8 +30,12 @@ function createApp(): express.Application {
 
 const app = createApp();
 
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+const isPrimaryModule = typeof require !== "undefined" && require.main === module;
 
-export { createApp };
+if (isPrimaryModule) {
+  app.listen(PORT, () => {
+    console.log(`Server listening on http://localhost:${PORT}`);
+  });
+}
+
+export { app, createApp };
