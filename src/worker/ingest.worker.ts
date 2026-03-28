@@ -1,5 +1,7 @@
 import "dotenv/config";
 
+import express from "express";
+
 import { Worker, type Job } from "bullmq";
 
 import { getBullMQConnectionOptions } from "../config/redis";
@@ -66,4 +68,10 @@ ingestWorker.on("completed", (job: Job) => {
 
 ingestWorker.on("failed", (job: Job | undefined, err: Error) => {
   console.error("[ingest.worker] failed", { jobId: job?.id, name: job?.name, error: err.message });
+});
+
+
+const app = express();
+app.listen(3001, () => {
+  console.log(`Server listening on http://localhost:${3001}`);
 });
