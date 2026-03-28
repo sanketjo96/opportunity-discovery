@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-import type { Opportunity } from "../types/opportunity";
+import type { Opportunity } from "../types/llm/opportunity";
 
 const OPPORTUNITY_JSON_SCHEMA = `{
   "title": string (required, short headline),

@@ -8,10 +8,12 @@ export async function handleTelegramTextIngest(
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  console.log("[api] POST /api/ingest invoked");
   try {
     const payload = parseTelegramTextIngestPayload(req.body);
 
     if (payload === null) {
+      console.warn("[api] POST /api/ingest rejected: invalid payload");
       res.status(400).json({
         error: "Bad Request",
         message:
@@ -20,14 +22,15 @@ export async function handleTelegramTextIngest(
       return;
     }
 
-
     const job = await ingestQueue.add("process-message", payload);
 
+    console.log("[api] POST /api/ingest queued", { jobId: job.id, updateId: payload.update_id });
     res.status(200).json({
       success: true,
       jobId: job.id,
     });
   } catch (err) {
+    console.error("[api] POST /api/ingest failed", err);
     next(err);
   }
 }

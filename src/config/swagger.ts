@@ -99,6 +99,37 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         },
       },
     },
+    "/api/opportunities": {
+      get: {
+        tags: ["Opportunities"],
+        summary: "List all opportunities",
+        description:
+          "Returns every opportunity document stored in MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Response items exclude Telegram ingest metadata (that remains stored server-side only).",
+        operationId: "getOpportunityListings",
+        responses: {
+          "200": {
+            description: "List of opportunities",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/OpportunityListingResponse",
+                },
+              },
+            },
+          },
+          "500": {
+            description: "Server error (for example MongoDB unavailable or misconfigured)",
+            content: {
+              "application/json": {
+                schema: {
+                  $ref: "#/components/schemas/ErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
@@ -164,6 +195,39 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         properties: {
           error: { type: "string", example: "Bad Request" },
           message: { type: "string" },
+        },
+      },
+      OpportunityListingItem: {
+        type: "object",
+        required: ["id", "source", "rawText", "title", "description", "category", "createdAt", "updatedAt"],
+        properties: {
+          id: { type: "string", description: "MongoDB document id" },
+          source: { type: "string", example: "telegram" },
+          rawText: { type: "string", description: "Original Telegram text or caption" },
+          title: { type: "string" },
+          description: { type: "string" },
+          category: { type: "string", enum: ["casting", "workshop", "other"] },
+          roles: { type: "array", items: { type: "string" } },
+          ageRange: { type: "string" },
+          location: { type: "string" },
+          language: { type: "string" },
+          email: { type: "string" },
+          url: { type: "string" },
+          contact: { type: "string" },
+          deadline: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      OpportunityListingResponse: {
+        type: "object",
+        required: ["items", "count"],
+        properties: {
+          items: {
+            type: "array",
+            items: { $ref: "#/components/schemas/OpportunityListingItem" },
+          },
+          count: { type: "integer", description: "Number of items returned" },
         },
       },
     },

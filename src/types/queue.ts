@@ -1,4 +1,4 @@
-import type { Opportunity } from "./opportunity";
+import type { Opportunity } from "./llm/opportunity";
 
 export enum IngestJobStage {
   RECEIVED = "RECEIVED",
@@ -13,4 +13,6 @@ export interface IngestJobResult {
   messageId: number;
   extractedText: string;
   opportunity: Opportunity;
+  /** MongoDB `_id` of the persisted document */
+  mongoDocumentId: string;
 }

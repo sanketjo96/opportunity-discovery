@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import { opportunityListingRouter } from "./opportunities/opportunityListing.route";
 import { telegramTextIngestRouter } from "./telegramTextIngest/telegramTextIngest.route";
 
 /**
@@ -8,3 +9,4 @@ import { telegramTextIngestRouter } from "./telegramTextIngest/telegramTextInges
 export const apiRouter = Router();
 
 apiRouter.use("/ingest", telegramTextIngestRouter);
+apiRouter.use("/opportunities", opportunityListingRouter);
