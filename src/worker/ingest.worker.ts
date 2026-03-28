@@ -6,7 +6,7 @@ import { Worker, type Job } from "bullmq";
 import { connectMongo } from "../config/mongodb";
 import { getBullMQConnectionOptions } from "../config/redis";
 import { OpportunityModel } from "../models/opportunity.models";
-import { extractOpportunity } from "../services/llm.service";
+import { extractOpportunity } from "../services/llm";
 import type { Opportunity } from "../types/llm/opportunity";
 import type { TelegramTextIngestPayload } from "../types/telegramTextIngest.types";
 import { IngestJobStage, type IngestJobResult } from "../types/queue";
@@ -39,7 +39,8 @@ function buildMongoDoc(
     ...(opportunity.email ? { email: opportunity.email } : {}),
     ...(opportunity.url ? { url: opportunity.url } : {}),
     ...(opportunity.contact ? { contact: opportunity.contact } : {}),
-    ...(opportunity.deadline ? { deadline: opportunity.deadline } : {}),
+    ...(opportunity.gender ? { gender: opportunity.gender } : {}),
+    ...(opportunity.date ? { deadline: opportunity.date } : {}),
     metadata: {
       updateId: payload.update_id,
       messageId: message.message_id,

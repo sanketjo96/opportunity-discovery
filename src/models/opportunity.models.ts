@@ -26,12 +26,16 @@ const opportunitySchema = new mongoose.Schema(
     description: { type: String, required: true },
     category: {
       type: String,
-      enum: ["casting", "workshop", "other"],
+      enum: ["casting", "workshop", "music", "voiceover", "other"],
       required: true,
     },
 
     roles: [String],
     ageRange: String,
+    gender: {
+      type: String,
+      enum: ["male", "female", "unisex"],
+    },
     location: String,
     language: String,
     email: String,

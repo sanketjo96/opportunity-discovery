@@ -1,6 +1,7 @@
 export type Opportunity = {
   title: string;
-  category: "casting" | "workshop" | "other";
+  category: "casting" | "workshop" | "music" | "voiceover" | "other";
+  gender?: "male" | "female" | "unisex";
   roles?: string[];
   ageRange?: string;
   location?: string;
@@ -9,5 +10,5 @@ export type Opportunity = {
   email?: string;
   url?: string;
   contact?: string;
-  deadline?: string;
+  date?: string;
 };
