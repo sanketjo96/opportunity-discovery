@@ -1,0 +1,98 @@
+import type {
+  TelegramChat,
+  TelegramMessage,
+  TelegramTextIngestPayload,
+  TelegramUser,
+} from "../types/telegramTextIngest.types";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function parseTelegramUser(value: unknown): TelegramUser | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  const { id, is_bot, first_name, last_name, language_code } = value;
+  if (typeof id !== "number" || typeof is_bot !== "boolean" || typeof first_name !== "string") {
+    return null;
+  }
+  if (last_name !== undefined && typeof last_name !== "string") {
+    return null;
+  }
+  if (language_code !== undefined && typeof language_code !== "string") {
+    return null;
+  }
+  return {
+    id,
+    is_bot,
+    first_name,
+    ...(typeof last_name === "string" ? { last_name } : {}),
+    ...(typeof language_code === "string" ? { language_code } : {}),
+  };
+}
+
+function parseTelegramChat(value: unknown): TelegramChat | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  const { id, first_name, last_name, type } = value;
+  if (typeof id !== "number" || typeof type !== "string") {
+    return null;
+  }
+  if (first_name !== undefined && typeof first_name !== "string") {
+    return null;
+  }
+  if (last_name !== undefined && typeof last_name !== "string") {
+    return null;
+  }
+  return {
+    id,
+    type,
+    ...(typeof first_name === "string" ? { first_name } : {}),
+    ...(typeof last_name === "string" ? { last_name } : {}),
+  };
+}
+
+function parseTelegramMessage(value: unknown): TelegramMessage | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+  const { message_id, from, chat, date, text } = value;
+  if (typeof message_id !== "number" || typeof date !== "number") {
+    return null;
+  }
+  if (typeof text !== "string" || text.trim().length === 0) {
+    return null;
+  }
+  const fromUser = parseTelegramUser(from);
+  const chatObj = parseTelegramChat(chat);
+  if (fromUser === null || chatObj === null) {
+    return null;
+  }
+  return {
+    message_id,
+    from: fromUser,
+    chat: chatObj,
+    date,
+    text: text.trim(),
+  };
+}
+
+/**
+ * Parses and validates a Telegram webhook body into {@link TelegramTextIngestPayload}, or null if invalid.
+ */
+export function parseTelegramTextIngestPayload(body: unknown): TelegramTextIngestPayload | null {
+  if (!isRecord(body)) {
+    return null;
+  }
+  const { update_id, message } = body;
+  if (typeof update_id !== "number") {
+    return null;
+  }
+  const msg = parseTelegramMessage(message);
+  if (msg === null) {
+    return null;
+  }
+  return { update_id, message: msg };
+}

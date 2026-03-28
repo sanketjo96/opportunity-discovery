@@ -16,30 +16,41 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
   paths: {
     "/api/ingest": {
       post: {
-        tags: ["Text ingest"],
-        summary: "Ingest text from a webhook",
+        tags: ["TelegramTextIngest"],
+        summary: "Ingest a Telegram text message update",
         description:
-          "Accepts raw message text (e.g. forwarded from a Telegram bot). Returns a mock structured result.",
-        operationId: "postIngest",
+          "Accepts a Telegram Bot API–style update object (update_id + message with text). Returns a mock structured result.",
+        operationId: "postTelegramTextIngest",
         requestBody: {
           required: true,
           content: {
             "application/json": {
               schema: {
-                $ref: "#/components/schemas/TextIngestRequest",
+                $ref: "#/components/schemas/TelegramTextIngestRequest",
               },
               examples: {
-                telegram: {
-                  summary: "With source",
+                privateMessage: {
+                  summary: "Private chat text message",
                   value: {
-                    text: "Casting call: lead role, Mumbai, apply by Friday.",
-                    source: "telegram",
-                  },
-                },
-                minimal: {
-                  summary: "Text only",
-                  value: {
-                    text: "Workshop announcement for actors.",
+                    update_id: 886851032,
+                    message: {
+                      message_id: 6,
+                      from: {
+                        id: 5354571573,
+                        is_bot: false,
+                        first_name: "Sanket",
+                        last_name: "Joshi",
+                        language_code: "en",
+                      },
+                      chat: {
+                        id: 5354571573,
+                        first_name: "Sanket",
+                        last_name: "Joshi",
+                        type: "private",
+                      },
+                      date: 1774692258,
+                      text: "Hellos",
+                    },
                   },
                 },
               },
@@ -48,30 +59,30 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         },
         responses: {
           "200": {
-            description: "Message accepted and processed",
+            description: "Update accepted and processed",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/TextIngestSuccessResponse",
+                  $ref: "#/components/schemas/TelegramTextIngestSuccessResponse",
                 },
               },
             },
           },
           "400": {
             description:
-              "Invalid JSON body, missing/invalid `text`, or malformed request",
+              "Invalid JSON body, or body does not match Telegram update shape (update_id, message with text)",
             content: {
               "application/json": {
                 schema: {
                   $ref: "#/components/schemas/ErrorResponse",
                 },
                 examples: {
-                  missingText: {
+                  validation: {
                     summary: "Validation error",
                     value: {
                       error: "Bad Request",
                       message:
-                        "Request body must include a non-empty string field: text",
+                        "Request body must be a Telegram update with numeric update_id and message (message_id, from, chat, date, non-empty text)",
                     },
                   },
                   invalidJson: {
@@ -91,38 +102,63 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
   },
   components: {
     schemas: {
-      TextIngestRequest: {
+      TelegramUser: {
         type: "object",
-        required: ["text"],
+        required: ["id", "is_bot", "first_name"],
         properties: {
-          text: {
-            type: "string",
-            description: "Raw message body to ingest",
-            minLength: 1,
-          },
-          source: {
-            type: "string",
-            description: "Optional origin label (e.g. telegram, webhook)",
-          },
+          id: { type: "integer" },
+          is_bot: { type: "boolean" },
+          first_name: { type: "string" },
+          last_name: { type: "string" },
+          language_code: { type: "string" },
         },
       },
-      TextIngestStructuredResult: {
+      TelegramChat: {
+        type: "object",
+        required: ["id", "type"],
+        properties: {
+          id: { type: "integer" },
+          first_name: { type: "string" },
+          last_name: { type: "string" },
+          type: { type: "string", example: "private" },
+        },
+      },
+      TelegramMessage: {
+        type: "object",
+        required: ["message_id", "from", "chat", "date", "text"],
+        properties: {
+          message_id: { type: "integer" },
+          from: { $ref: "#/components/schemas/TelegramUser" },
+          chat: { $ref: "#/components/schemas/TelegramChat" },
+          date: { type: "integer", description: "Unix timestamp" },
+          text: { type: "string", minLength: 1 },
+        },
+      },
+      TelegramTextIngestRequest: {
+        type: "object",
+        required: ["update_id", "message"],
+        properties: {
+          update_id: { type: "integer" },
+          message: { $ref: "#/components/schemas/TelegramMessage" },
+        },
+      },
+      TelegramTextIngestStructuredResult: {
         type: "object",
         required: ["id", "receivedAt", "preview", "sourceLabel"],
         properties: {
           id: { type: "string", format: "uuid" },
           receivedAt: { type: "string", format: "date-time" },
           preview: { type: "string" },
-          sourceLabel: { type: "string" },
+          sourceLabel: { type: "string", example: "telegram:private" },
         },
       },
-      TextIngestSuccessResponse: {
+      TelegramTextIngestSuccessResponse: {
         type: "object",
         required: ["success", "data"],
         properties: {
           success: { type: "boolean", enum: [true] },
           data: {
-            $ref: "#/components/schemas/TextIngestStructuredResult",
+            $ref: "#/components/schemas/TelegramTextIngestStructuredResult",
           },
         },
       },
