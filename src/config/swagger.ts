@@ -19,7 +19,7 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         tags: ["TelegramTextIngest"],
         summary: "Ingest a Telegram text message update",
         description:
-          "Accepts a Telegram Bot API–style update object (update_id + message with text). Enqueues a background job on the `ingest` queue (job name `process-message`) and returns immediately.",
+          "Accepts a Telegram Bot API–style update object (update_id + message with text and/or caption). Enqueues a background job on the `ingest` queue (job name `process-message`) and returns immediately.",
         operationId: "postTelegramTextIngest",
         requestBody: {
           required: true,
@@ -125,13 +125,18 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
       },
       TelegramMessage: {
         type: "object",
-        required: ["message_id", "from", "chat", "date", "text"],
+        required: ["message_id", "from", "chat", "date"],
         properties: {
           message_id: { type: "integer" },
           from: { $ref: "#/components/schemas/TelegramUser" },
           chat: { $ref: "#/components/schemas/TelegramChat" },
           date: { type: "integer", description: "Unix timestamp" },
-          text: { type: "string", minLength: 1 },
+          text: { type: "string", minLength: 1, description: "Text body (text messages)" },
+          caption: {
+            type: "string",
+            minLength: 1,
+            description: "Media caption; at least one of text or caption must be present",
+          },
         },
       },
       TelegramTextIngestRequest: {

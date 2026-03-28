@@ -15,7 +15,7 @@ export async function processTelegramTextIngestMessage(
 ): Promise<TelegramTextIngestStructuredResult> {
   console.log("[telegramTextIngest.service] received update:", JSON.stringify(input));
 
-  const text = input.message.text;
+  const text = input.message.text?.trim() || input.message.caption?.trim() || "";
   const preview =
     text.length <= PREVIEW_MAX_LENGTH ? text : `${text.slice(0, PREVIEW_MAX_LENGTH)}…`;
 

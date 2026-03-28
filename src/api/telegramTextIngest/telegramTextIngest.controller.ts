@@ -15,7 +15,7 @@ export async function handleTelegramTextIngest(
       res.status(400).json({
         error: "Bad Request",
         message:
-          "Request body must be a Telegram update with numeric update_id and message (message_id, from, chat, date, non-empty text)",
+          "Request body must be a Telegram update with numeric update_id and message (message_id, from, chat, date, and non-empty text or caption)",
       });
       return;
     }

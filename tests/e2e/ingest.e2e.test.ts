@@ -48,14 +48,31 @@ describe("POST /api/ingest", () => {
     expect(typeof res.body.message).toBe("string");
   });
 
-  it("returns 400 when message.text is missing or empty", async () => {
+  it("returns 400 when message has no non-empty text or caption", async () => {
     await request(app)
       .post("/api/ingest")
       .send({
         ...validTelegramUpdate,
-        message: { ...validTelegramUpdate.message, text: "   " },
+        message: {
+          ...validTelegramUpdate.message,
+          text: "   ",
+        },
       })
       .expect(400);
+  });
+
+  it("returns 200 when message has caption only", async () => {
+    const { text: _t, ...rest } = validTelegramUpdate.message;
+    const res = await request(app)
+      .post("/api/ingest")
+      .send({
+        ...validTelegramUpdate,
+        message: { ...rest, caption: "Casting call from photo caption" },
+      })
+      .expect(200);
+
+    expect(res.body).toMatchObject({ success: true });
+    expect(typeof res.body.jobId).toBe("string");
   });
 
   it("returns 400 when update_id is not a number", async () => {

@@ -66,11 +66,13 @@ function parseTelegramMessage(value: unknown): TelegramMessage | null {
   if (!isRecord(value)) {
     return null;
   }
-  const { message_id, from, chat, date, text } = value;
+  const { message_id, from, chat, date, text, caption } = value;
   if (typeof message_id !== "number" || typeof date !== "number") {
     return null;
   }
-  if (typeof text !== "string" || text.trim().length === 0) {
+  const textTrim = typeof text === "string" ? text.trim() : "";
+  const captionTrim = typeof caption === "string" ? caption.trim() : "";
+  if (textTrim.length === 0 && captionTrim.length === 0) {
     return null;
   }
   const fromUser = parseTelegramUser(from);
@@ -83,7 +85,8 @@ function parseTelegramMessage(value: unknown): TelegramMessage | null {
     from: fromUser,
     chat: chatObj,
     date,
-    text: text.trim(),
+    ...(textTrim.length > 0 ? { text: textTrim } : {}),
+    ...(captionTrim.length > 0 ? { caption: captionTrim } : {}),
   };
 }
 

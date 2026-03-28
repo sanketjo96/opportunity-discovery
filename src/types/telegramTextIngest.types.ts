@@ -25,7 +25,10 @@ export interface TelegramMessage {
   from: TelegramUser;
   chat: TelegramChat;
   date: number;
-  text: string;
+  /** Plain text body (text messages). */
+  text?: string;
+  /** Media caption (photo, video, etc.); use when `text` is absent. */
+  caption?: string;
 }
 
 /**
