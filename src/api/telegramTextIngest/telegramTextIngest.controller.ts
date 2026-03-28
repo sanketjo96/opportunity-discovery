@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 
 import { parseTelegramTextIngestPayload } from "../../dataValidators/telegramTextIngest.validator";
-import { processTelegramTextIngestMessage } from "./telegramTextIngest.service";
+import { ingestQueue } from "../../queue/ingest.queue";
 
 export async function handleTelegramTextIngest(
   req: Request,
@@ -20,11 +20,12 @@ export async function handleTelegramTextIngest(
       return;
     }
 
-    const result = await processTelegramTextIngestMessage(payload);
+
+    const job = await ingestQueue.add("process-message", payload);
 
     res.status(200).json({
       success: true,
-      data: result,
+      jobId: job.id,
     });
   } catch (err) {
     next(err);

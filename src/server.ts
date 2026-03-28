@@ -3,6 +3,7 @@ import "dotenv/config";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 
+import "./config/redis";
 import { apiRouter } from "./api";
 import { swaggerSpec } from "./config/swagger";
 import { errorMiddleware } from "./middleware/error.middleware";

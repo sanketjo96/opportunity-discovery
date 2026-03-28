@@ -19,7 +19,7 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         tags: ["TelegramTextIngest"],
         summary: "Ingest a Telegram text message update",
         description:
-          "Accepts a Telegram Bot API–style update object (update_id + message with text). Returns a mock structured result.",
+          "Accepts a Telegram Bot API–style update object (update_id + message with text). Enqueues a background job on the `ingest` queue (job name `process-message`) and returns immediately.",
         operationId: "postTelegramTextIngest",
         requestBody: {
           required: true,
@@ -59,11 +59,11 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         },
         responses: {
           "200": {
-            description: "Update accepted and processed",
+            description: "Update validated and queued for processing",
             content: {
               "application/json": {
                 schema: {
-                  $ref: "#/components/schemas/TelegramTextIngestSuccessResponse",
+                  $ref: "#/components/schemas/TelegramTextIngestQueuedResponse",
                 },
               },
             },
@@ -142,23 +142,14 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
           message: { $ref: "#/components/schemas/TelegramMessage" },
         },
       },
-      TelegramTextIngestStructuredResult: {
+      TelegramTextIngestQueuedResponse: {
         type: "object",
-        required: ["id", "receivedAt", "preview", "sourceLabel"],
-        properties: {
-          id: { type: "string", format: "uuid" },
-          receivedAt: { type: "string", format: "date-time" },
-          preview: { type: "string" },
-          sourceLabel: { type: "string", example: "telegram:private" },
-        },
-      },
-      TelegramTextIngestSuccessResponse: {
-        type: "object",
-        required: ["success", "data"],
+        required: ["success", "jobId"],
         properties: {
           success: { type: "boolean", enum: [true] },
-          data: {
-            $ref: "#/components/schemas/TelegramTextIngestStructuredResult",
+          jobId: {
+            type: "string",
+            description: "BullMQ job id on the ingest queue",
           },
         },
       },
