@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID } from "crypto";
 
 import type { TextIngestPayload, TextIngestStructuredResult } from "../../types/textIngest.types";
 
