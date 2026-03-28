@@ -34,6 +34,7 @@ export async function handleTextIngest(
   next: NextFunction
 ): Promise<void> {
   try {
+    console.log(req.body);
     const payload = parseTextIngestPayload(req.body);
 
     if (payload === null) {
