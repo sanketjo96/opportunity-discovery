@@ -29,6 +29,33 @@ function firstQueryString(value: unknown): string | undefined {
   return undefined;
 }
 
+/**
+ * Single `category` query param only: comma-separated values, e.g. `category=casting,workshop`.
+ * Repeated `category=` keys are not accepted.
+ */
+function parseCategoryCommaList(
+  raw: unknown
+): { ok: true; tokens: string[] } | { ok: false; message: string } {
+  if (raw === undefined || raw === null || raw === "") {
+    return { ok: true, tokens: [] };
+  }
+  if (Array.isArray(raw)) {
+    return {
+      ok: false,
+      message:
+        "Use a single category parameter with comma-separated values, e.g. ?category=casting,workshop",
+    };
+  }
+  if (typeof raw !== "string") {
+    return { ok: false, message: "category must be a string" };
+  }
+  const tokens = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+  return { ok: true, tokens: [...new Set(tokens)] };
+}
+
 function parsePositiveIntParam(
   raw: unknown,
   name: string,
@@ -59,17 +86,23 @@ export type ParsedListingQuery =
  * Parses filter query params plus `page` (1-based, default 1) and `pageSize` (default 20, max 100).
  */
 export function parseOpportunityListingQuery(query: Record<string, unknown>): ParsedListingQuery {
-  const category = firstQueryString(query.category);
+  const categoryParsed = parseCategoryCommaList(query.category);
+  if (!categoryParsed.ok) {
+    return { ok: false, message: categoryParsed.message };
+  }
+  const categoryTokens = categoryParsed.tokens;
+  for (const c of categoryTokens) {
+    if (!VALID_CATEGORIES.has(c)) {
+      return {
+        ok: false,
+        message: `Invalid category "${c}". Allowed: ${[...VALID_CATEGORIES].join(", ")}`,
+      };
+    }
+  }
+
   const gender = firstQueryString(query.gender);
   const location = firstQueryString(query.location);
   const language = firstQueryString(query.language);
-
-  if (category !== undefined && !VALID_CATEGORIES.has(category)) {
-    return {
-      ok: false,
-      message: `Invalid category. Allowed: ${[...VALID_CATEGORIES].join(", ")}`,
-    };
-  }
 
   if (gender !== undefined && !VALID_GENDERS.has(gender)) {
     return {
@@ -100,8 +133,8 @@ export function parseOpportunityListingQuery(query: Record<string, unknown>): Pa
   }
 
   const filters: OpportunityListingFilters = {};
-  if (category !== undefined) {
-    filters.category = category as OpportunityListingFilters["category"];
+  if (categoryTokens.length > 0) {
+    filters.categories = categoryTokens as OpportunityListingFilters["categories"];
   }
   if (gender !== undefined) {
     filters.gender = gender as OpportunityListingFilters["gender"];

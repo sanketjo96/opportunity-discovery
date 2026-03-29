@@ -12,9 +12,10 @@ export type OpportunityListingCategory =
 
 export type OpportunityListingGender = "male" | "female" | "unisex";
 
-/** Optional filters from query string (all ANDed). */
+/** Optional filters from query string (AND between filter groups). */
 export interface OpportunityListingFilters {
-  category?: OpportunityListingCategory;
+  /** If set (non-empty), document category must be one of these (OR). */
+  categories?: OpportunityListingCategory[];
   gender?: OpportunityListingGender;
   /** Case-insensitive substring match on stored location. */
   location?: string;

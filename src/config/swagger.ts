@@ -104,7 +104,7 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         tags: ["Opportunities"],
         summary: "List all opportunities",
         description:
-          "Returns opportunity documents from MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Pagination: `page` (1-based, default 1) and `pageSize` (default 20, max 100). Filters are combined with AND: `category` and `gender` are exact matches; `location` and `language` are case-insensitive substring matches. Response items exclude Telegram ingest metadata (stored server-side only).",
+          "Returns opportunity documents from MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Pagination: `page` (1-based, default 1) and `pageSize` (default 20, max 100). Filters are combined with AND. `category` is a single query parameter with comma-separated values (e.g. `category=casting,workshop`); a document matches if its category is any of the listed values (OR). `gender` is an exact match; `location` and `language` are case-insensitive substring matches. Response items exclude Telegram ingest metadata (stored server-side only).",
         operationId: "getOpportunityListings",
         parameters: [
           {
@@ -113,9 +113,10 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
             required: false,
             schema: {
               type: "string",
-              enum: ["casting", "workshop", "music", "voiceover", "other"],
+              example: "casting,workshop",
             },
-            description: "Exact category match",
+            description:
+              "Comma-separated categories (single `category` param only), e.g. `casting,workshop,music`. Matches documents whose category is any listed value (OR).",
           },
           {
             name: "gender",

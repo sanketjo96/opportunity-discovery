@@ -15,8 +15,8 @@ function escapeRegex(value: string): string {
 function buildMongoFilter(filters: OpportunityListingFilters): Record<string, unknown> {
   const mongoFilter: Record<string, unknown> = {};
 
-  if (filters.category !== undefined) {
-    mongoFilter.category = filters.category;
+  if (filters.categories !== undefined && filters.categories.length > 0) {
+    mongoFilter.category = { $in: filters.categories };
   }
   if (filters.gender !== undefined) {
     mongoFilter.gender = filters.gender;
