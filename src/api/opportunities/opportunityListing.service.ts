@@ -3,6 +3,7 @@ import { OpportunityModel } from "../../models/opportunity.models";
 import type {
   OpportunityListingFilters,
   OpportunityListingItem,
+  OpportunityListingPagination,
   OpportunityListingResponse,
 } from "../../types/api/opportunityListing.types";
 import { OpportunityListingItemDoc } from "../../types/mongo/opportunityDBItem";
@@ -41,18 +42,37 @@ function mapDocToItem(doc: OpportunityListingItemDoc): OpportunityListingItem {
 }
 
 /**
- * Returns opportunity documents from MongoDB, newest first, optionally filtered by query params.
+ * Returns a page of opportunity documents from MongoDB, newest first, optionally filtered.
  */
 export async function listOpportunities(
-  filters: OpportunityListingFilters = {}
+  filters: OpportunityListingFilters = {},
+  pagination: OpportunityListingPagination
 ): Promise<OpportunityListingResponse> {
   await connectMongo();
   const mongoFilter = buildMongoFilter(filters);
-  const docs = await OpportunityModel.find(mongoFilter as object)
+  const filterArg = mongoFilter as object;
+
+  const total = await OpportunityModel.countDocuments(filterArg).exec();
+
+  const { page, pageSize } = pagination;
+  const skip = (page - 1) * pageSize;
+  const totalPages = total === 0 ? 0 : Math.ceil(total / pageSize);
+
+  const docs = await OpportunityModel.find(filterArg)
     .select("-metadata -__v")
     .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize)
     .lean()
     .exec();
+
   const items = docs.map((doc) => mapDocToItem(doc as unknown as OpportunityListingItemDoc));
-  return { items, count: items.length };
+  return {
+    items,
+    count: items.length,
+    total,
+    page,
+    pageSize,
+    totalPages,
+  };
 }

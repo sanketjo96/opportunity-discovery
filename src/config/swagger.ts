@@ -104,7 +104,7 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
         tags: ["Opportunities"],
         summary: "List all opportunities",
         description:
-          "Returns opportunity documents from MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Optional query params are combined with AND: `category` and `gender` are exact matches; `location` and `language` are case-insensitive substring matches. Response items exclude Telegram ingest metadata (stored server-side only).",
+          "Returns opportunity documents from MongoDB (ingest pipeline), sorted by `createdAt` descending (newest first). Pagination: `page` (1-based, default 1) and `pageSize` (default 20, max 100). Filters are combined with AND: `category` and `gender` are exact matches; `location` and `language` are case-insensitive substring matches. Response items exclude Telegram ingest metadata (stored server-side only).",
         operationId: "getOpportunityListings",
         parameters: [
           {
@@ -138,6 +138,20 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
             schema: { type: "string" },
             description: "Case-insensitive substring match on language",
           },
+          {
+            name: "page",
+            in: "query",
+            required: false,
+            schema: { type: "integer", minimum: 1, default: 1 },
+            description: "Page number (1-based)",
+          },
+          {
+            name: "pageSize",
+            in: "query",
+            required: false,
+            schema: { type: "integer", minimum: 1, maximum: 100, default: 20 },
+            description: "Items per page (max 100)",
+          },
         ],
         responses: {
           "200": {
@@ -151,7 +165,8 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
             },
           },
           "400": {
-            description: "Invalid query parameter (for example unknown category or gender)",
+            description:
+              "Invalid query parameter (unknown category or gender, or invalid `page` / `pageSize`)",
             content: {
               "application/json": {
                 schema: {
@@ -268,13 +283,17 @@ const swaggerDefinition: swaggerJsdoc.OAS3Definition = {
       },
       OpportunityListingResponse: {
         type: "object",
-        required: ["items", "count"],
+        required: ["items", "count", "total", "page", "pageSize", "totalPages"],
         properties: {
           items: {
             type: "array",
             items: { $ref: "#/components/schemas/OpportunityListingItem" },
           },
-          count: { type: "integer", description: "Number of items returned" },
+          count: { type: "integer", description: "Number of items in this page" },
+          total: { type: "integer", description: "Total documents matching filters (all pages)" },
+          page: { type: "integer", description: "Current page (1-based)" },
+          pageSize: { type: "integer", description: "Page size used for this request" },
+          totalPages: { type: "integer", description: "Total pages for this filter set" },
         },
       },
     },

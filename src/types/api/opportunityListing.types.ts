@@ -44,7 +44,21 @@ export interface OpportunityListingItem {
   updatedAt: string;
 }
 
+/** Resolved pagination (defaults applied). */
+export interface OpportunityListingPagination {
+  /** 1-based page index */
+  page: number;
+  pageSize: number;
+}
+
 export interface OpportunityListingResponse {
   items: OpportunityListingItem[];
+  /** Number of items in this response (page). */
   count: number;
+  /** Total documents matching the filters (all pages). */
+  total: number;
+  page: number;
+  pageSize: number;
+  /** Total pages for the current filter set (ceil(total / pageSize)). */
+  totalPages: number;
 }

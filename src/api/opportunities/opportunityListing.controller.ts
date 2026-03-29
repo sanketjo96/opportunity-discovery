@@ -17,9 +17,12 @@ export async function handleListOpportunities(
       return;
     }
 
-    const body = await listOpportunities(parsed.filters);
+    const body = await listOpportunities(parsed.filters, parsed.pagination);
     console.log("[api] GET /api/opportunities success", {
       count: body.count,
+      total: body.total,
+      page: body.page,
+      pageSize: body.pageSize,
       filters: parsed.filters,
     });
     res.status(200).json(body);
